@@ -44,27 +44,17 @@ async function init() {
 }
 
 async function getTimes(stopId, label) {
-    const container = document.getElementById('container');
-    const backBtn = document.getElementById('backBtn');
-    backBtn.style.display = "block";
-    
-    // Si el ID tiene 4 dígitos, le ponemos el 0
-    let fullId = stopId.length === 4 ? "0" + stopId : stopId;
+    // 1. Corregimos el ID (Aseguramos los 5 dígitos)
+    let idLimpio = stopId.toString().length === 4 ? "0" + stopId : stopId;
 
-    // Esta URL es la oficial que el Consorcio usa para móviles
-    // Es la más fiable de todas porque la cargará directamente el móvil de tu padre
-    const urlBusca = `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${fullId}`;
+    // 2. Esta es la URL que el Consorcio NO puede bloquear porque es la de sus propios QR
+    // Usamos el formato que hemos visto en tu imagen
+    const urlOficial = `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${idLimpio}`;
 
-    container.innerHTML = `
-        <div style="height: 80vh; width: 100%; -webkit-overflow-scrolling: touch; overflow-y: scroll;">
-            <p style="text-align:center; color:#f1c40f;">Cargando tiempos de ${label}...</p>
-            <iframe 
-                src="${urlBusca}" 
-                style="width: 100%; height: 100%; border: none; background: white; border-radius: 10px;"
-                onload="this.previousElementSibling.style.display='none'">
-            </iframe>
-        </div>
-    `;
+    // 3. LA MAGIA: En lugar de un iframe que da error, abrimos la web oficial.
+    // Usamos "_self" para que se abra en la misma ventana. 
+    // Tu padre solo tiene que usar el botón "ATRÁS" del móvil para volver a los botones.
+    window.location.href = urlOficial;
 }
 
 init();
