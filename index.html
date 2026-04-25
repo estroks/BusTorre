@@ -46,36 +46,25 @@ async function init() {
 async function getTimes(stopId, label) {
     const container = document.getElementById('container');
     const backBtn = document.getElementById('backBtn');
-    
-    // Indicamos que estamos buscando
-    container.innerHTML = `<p class="loading">Buscando buses en ${label}...</p>`;
     backBtn.style.display = "block";
+    
+    // Si el ID tiene 4 dígitos, le ponemos el 0
+    let fullId = stopId.length === 4 ? "0" + stopId : stopId;
 
-    try {
-        const res = await fetch(`/api/proxy?stopId=${stopId}`);
-        const data = await res.json();
-        
-        if (data.error) {
-            // Si el proxy nos dice que no encontró nada, mostramos el error y un botón de reintento
-            container.innerHTML = `
-                <div style="padding:20px; text-align:center;">
-                    <p style="font-size:1.5rem; color:#f39c12;">${data.error}</p>
-                    <button class="main-button" onclick="getTimes('${stopId}', '${label}')">🔄 REINTENTAR</button>
-                </div>`;
-        } else {
-            // Mostramos el HTML tal cual viene del Consorcio. 
-            // Forzamos fondo negro y letra blanca para que sea legible.
-            container.innerHTML = `
-                <div class="results" style="color:white !important; background:black !important; font-size: 1.2rem; text-align: left;">
-                    <div style="padding:10px; border:1px solid #444; margin-bottom:10px; font-size:0.9rem; color:#888;">
-                        Resultado para parada: ${stopId}
-                    </div>
-                    ${data.html}
-                </div>`;
-        }
-    } catch (err) {
-        container.innerHTML = `<p style="padding:20px; color:white;">Error de conexión con el servidor de Vercel. Inténtalo de nuevo.</p>`;
-    }
+    // Esta URL es la oficial que el Consorcio usa para móviles
+    // Es la más fiable de todas porque la cargará directamente el móvil de tu padre
+    const urlBusca = `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${fullId}`;
+
+    container.innerHTML = `
+        <div style="height: 80vh; width: 100%; -webkit-overflow-scrolling: touch; overflow-y: scroll;">
+            <p style="text-align:center; color:#f1c40f;">Cargando tiempos de ${label}...</p>
+            <iframe 
+                src="${urlBusca}" 
+                style="width: 100%; height: 100%; border: none; background: white; border-radius: 10px;"
+                onload="this.previousElementSibling.style.display='none'">
+            </iframe>
+        </div>
+    `;
 }
 
 init();
