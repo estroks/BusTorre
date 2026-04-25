@@ -3,68 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Torrelodones</title>
+    <title>Bus Torre</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <header>
-            <h1>Transporte Torrelodones</h1>
-            <button id="backBtn" style="display:none" onclick="init()">⬅ Volver</button>
-        </header>
-        
-        <div id="container">
-            <p class="loading">Cargando paradas...</p>
-        </div>
+    <h1>Bus Torrelodones</h1>
+    <div id="container">
+        <p style="text-align:center; color:white; font-size:1.5rem; margin-top:50px;">Cargando botones...</p>
     </div>
-<script>
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyPy6M1TTjLS_AaoG5eKZ-UZSIkhg6Hw2BAIjLbAANy-3MNJy-I8geVfCOtnx1sMg4P/exec";
 
-async function init() {
-    const container = document.getElementById('container');
-    const backBtn = document.getElementById('backBtn');
-    backBtn.style.display = "none";
-    container.innerHTML = '<p class="loading">Cargando paradas de Torrelodones...</p>';
+    <script>
+        const GOOGLE_SHEET_URL = "TU_URL_DE_APPS_SCRIPT_AQUI";
 
-    try {
-        const res = await fetch(GOOGLE_SHEET_URL);
-        const buttons = await res.json();
-        container.innerHTML = "";
-        buttons.forEach(btn => {
-            const b = document.createElement('button');
-            b.className = "main-button";
-            b.innerText = btn.label;
-            b.style.backgroundColor = btn.color || "#444";
-            b.onclick = () => getTimes(btn.stopId, btn.label);
-            container.appendChild(b);
-        });
-    } catch (e) {
-        container.innerHTML = "<p>Error al cargar el Excel. Revisa los permisos.</p>";
-    }
-}
+        async function init() {
+            const container = document.getElementById('container');
+            try {
+                const res = await fetch(GOOGLE_SHEET_URL);
+                const buttons = await res.json();
+                container.innerHTML = "";
 
-async function getTimes(stopId, label) {
-    const idStr = stopId.toString().padStart(5, '0');
-    
-    // Esta URL abre directamente la información de transporte de la parada en Google Maps
-    // Es la forma más fiable de ver los minutos que faltan sin errores 404
-    const urlGoogleMaps = `https://www.google.com/maps/search/?api=1&query=parada+bus+${idStr}+Torrelodones`;
-
-    const container = document.getElementById('container');
-    container.innerHTML = `
-        <div style="padding:40px; text-align:center;">
-            <h2 style="color:#f1c40f; font-size:2rem;">Abriendo ${label}</h2>
-            <p style="font-size:1.2rem;">Consultando tiempos en Google Maps...</p>
-            <div style="margin-top:20px; font-size:4rem;">🚌</div>
-        </div>`;
-
-    setTimeout(() => {
-        // Abrimos en la misma ventana para que tu padre pueda usar el botón "Atrás"
-        window.location.href = urlGoogleMaps;
-    }, 500);
-}
-
-init();
+                buttons.forEach(btn => {
+                    const b = document.createElement('button');
+                    b.className = "main-button";
+                    b.innerText = btn.label;
+                    b.style.backgroundColor = btn.color || "#444";
+                    // AL PULSAR: Abre directamente el link de Google Maps que pusiste en el Excel
+                    b.onclick = () => {
+                        container.innerHTML = `<h2 style="color:#f1c40f; text-align:center; margin-top:50px;">Abriendo ${btn.label}...</h2>`;
+                        window.location.href = btn.url;
+                    };
+                    container.appendChild(b);
+                });
+            } catch (e) {
+                container.innerHTML = "<p style='color:red; text-align:center;'>Error al cargar el Excel. Revisa los permisos de Google Apps Script.</p>";
+            }
+        }
+        init();
     </script>
 </body>
 </html>
