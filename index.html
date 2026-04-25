@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bus Torrelodones</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Transporte Torrelodones</h1>
+            <button id="backBtn" style="display:none" onclick="init()">⬅ Volver</button>
+        </header>
+        
+        <div id="container">
+            <p class="loading">Cargando paradas...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyPy6M1TTjLS_AaoG5eKZ-UZSIkhg6Hw2BAIjLbAANy-3MNJy-I8geVfCOtnx1sMg4P/exec";
+
+        async function init() {
+            const container = document.getElementById('container');
+            const backBtn = document.getElementById('backBtn');
+            backBtn.style.display = "none";
+            container.innerHTML = '<p class="loading">Cargando...</p>';
+
+            const res = await fetch(API_URL);
+            const buttons = await res.json();
+
+            container.innerHTML = "";
+            buttons.forEach(btn => {
+                const b = document.createElement('button');
+                b.className = "main-button";
+                b.innerText = btn.label;
+                b.style.backgroundColor = btn.color || "#444";
+                b.onclick = () => getTimes(btn.stopId, btn.label);
+                container.appendChild(b);
+            });
+        }
+
+        async function getTimes(stopId, label) {
+            const container = document.getElementById('container');
+            const backBtn = document.getElementById('backBtn');
+            container.innerHTML = `<p class="loading">Consultando tiempos en ${label}...</p>`;
+            backBtn.style.display = "block";
+
+            const res = await fetch(`${API_URL}?stopId=${stopId}`);
+            const data = await res.json();
+            
+            // Mostramos el resultado del widget del CRTM
+            container.innerHTML = `<div class="results">${data.html}</div>`;
+        }
+
+        init();
+    </script>
+</body>
+</html>

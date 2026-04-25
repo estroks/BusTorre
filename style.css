@@ -1,0 +1,45 @@
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 15px;
+}
+
+h1 { font-size: 1.8rem; text-align: center; color: #f1c40f; }
+
+.main-button {
+    display: block;
+    width: 100%;
+    padding: 30px 10px;
+    margin-bottom: 20px;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: white;
+    border: 3px solid #fff;
+    border-radius: 15px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+#backBtn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.results {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.5rem; /* Fuente muy grande */
+}
+
+/* Ajuste para el widget del CRTM dentro de nuestra web */
+.results table { width: 100%; border-collapse: collapse; }
+.results td { padding: 15px 5px; border-bottom: 1px solid #444; }
+.loading { font-size: 1.5rem; text-align: center; margin-top: 50px; }
