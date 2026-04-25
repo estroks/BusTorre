@@ -46,22 +46,35 @@ async function init() {
 async function getTimes(stopId, label) {
     const container = document.getElementById('container');
     const backBtn = document.getElementById('backBtn');
+    
+    // Indicamos que estamos buscando
     container.innerHTML = `<p class="loading">Buscando buses en ${label}...</p>`;
     backBtn.style.display = "block";
 
     try {
-        // LLAMADA A TU NUEVA API DE VERCEL (más rápida y sin errores SSL)
         const res = await fetch(`/api/proxy?stopId=${stopId}`);
         const data = await res.json();
         
         if (data.error) {
-            container.innerHTML = `<p>Error: ${data.error}</p>`;
+            // Si el proxy nos dice que no encontró nada, mostramos el error y un botón de reintento
+            container.innerHTML = `
+                <div style="padding:20px; text-align:center;">
+                    <p style="font-size:1.5rem; color:#f39c12;">${data.error}</p>
+                    <button class="main-button" onclick="getTimes('${stopId}', '${label}')">🔄 REINTENTAR</button>
+                </div>`;
         } else {
-            // Limpiamos un poco el HTML recibido para que se vea bien
-            container.innerHTML = `<div class="results">${data.html}</div>`;
+            // Mostramos el HTML tal cual viene del Consorcio. 
+            // Forzamos fondo negro y letra blanca para que sea legible.
+            container.innerHTML = `
+                <div class="results" style="color:white !important; background:black !important; font-size: 1.2rem; text-align: left;">
+                    <div style="padding:10px; border:1px solid #444; margin-bottom:10px; font-size:0.9rem; color:#888;">
+                        Resultado para parada: ${stopId}
+                    </div>
+                    ${data.html}
+                </div>`;
         }
     } catch (err) {
-        container.innerHTML = `<p>Error de conexión con el Consorcio.</p>`;
+        container.innerHTML = `<p style="padding:20px; color:white;">Error de conexión con el servidor de Vercel. Inténtalo de nuevo.</p>`;
     }
 }
 
