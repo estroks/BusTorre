@@ -44,28 +44,28 @@ async function init() {
 }
 
 async function getTimes(stopId, label) {
+    // 1. Limpiamos el ID
+    let idStr = stopId.toString().padStart(5, '0');
+
+    // 2. Creamos la búsqueda mágica para Google Maps
+    // Esta búsqueda abre directamente la "Ficha de Parada" con los tiempos en tiempo real
+    const urlGoogle = `https://www.google.com/maps/search/?api=1&query=parada+${idStr}+Torrelodones`;
+
+    // 3. Pantalla de carga elegante
     const container = document.getElementById('container');
-    const idLimpio = stopId.toString().padStart(5, '0');
-    
-    // Estas son las 3 únicas puertas que Azure tiene abiertas hoy
-    const rutas = [
-        `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${idLimpio}`,
-        `https://itinerarios.crtm.es/m/tiempos_paso.php?id_parada=8_${idLimpio}`,
-        `https://www.crtm.es/widgets/tst/tst.php?s=8_${idLimpio}`
-    ];
-
     container.innerHTML = `
-        <div style="padding:20px; text-align:center;">
-            <p style="color:#f1c40f;">Probando conexión oficial para ${label}...</p>
-            <p style="font-size:0.8rem; color:#888;">(Si una falla, probaremos la siguiente automáticamente)</p>
-        </div>
-    `;
+        <div style="padding:40px; text-align:center;">
+            <h2 style="color:#f1c40f; font-size:2rem;">Abriendo ${label}</h2>
+            <p style="font-size:1.2rem;">Buscando autobuses en el mapa...</p>
+            <div style="margin-top:20px; font-size:4rem;">🚌</div>
+        </div>`;
 
-    // Intentamos abrir la primera. Si tu padre ve el 404, solo tiene que dar atrás 
-    // y probar el botón que diga "INTENTAR RUTA 2".
-    // Pero para hacerlo automático y que él no sufra:
-    
-    window.location.href = rutas[0]; 
+    // 4. Salto a Google Maps
+    // Al ser un Android, esto abrirá directamente la APP de Google Maps 
+    // o la web oficial, que nunca falla.
+    setTimeout(() => {
+        window.location.href = urlGoogle;
+    }, 600);
 }
 
 init();
