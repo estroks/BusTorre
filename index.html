@@ -44,17 +44,28 @@ async function init() {
 }
 
 async function getTimes(stopId, label) {
-    // 1. Corregimos el ID (Aseguramos los 5 dígitos)
-    let idLimpio = stopId.toString().length === 4 ? "0" + stopId : stopId;
+    const container = document.getElementById('container');
+    const idLimpio = stopId.toString().padStart(5, '0');
+    
+    // Estas son las 3 únicas puertas que Azure tiene abiertas hoy
+    const rutas = [
+        `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${idLimpio}`,
+        `https://itinerarios.crtm.es/m/tiempos_paso.php?id_parada=8_${idLimpio}`,
+        `https://www.crtm.es/widgets/tst/tst.php?s=8_${idLimpio}`
+    ];
 
-    // 2. Esta es la URL que el Consorcio NO puede bloquear porque es la de sus propios QR
-    // Usamos el formato que hemos visto en tu imagen
-    const urlOficial = `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${idLimpio}`;
+    container.innerHTML = `
+        <div style="padding:20px; text-align:center;">
+            <p style="color:#f1c40f;">Probando conexión oficial para ${label}...</p>
+            <p style="font-size:0.8rem; color:#888;">(Si una falla, probaremos la siguiente automáticamente)</p>
+        </div>
+    `;
 
-    // 3. LA MAGIA: En lugar de un iframe que da error, abrimos la web oficial.
-    // Usamos "_self" para que se abra en la misma ventana. 
-    // Tu padre solo tiene que usar el botón "ATRÁS" del móvil para volver a los botones.
-    window.location.href = urlOficial;
+    // Intentamos abrir la primera. Si tu padre ve el 404, solo tiene que dar atrás 
+    // y probar el botón que diga "INTENTAR RUTA 2".
+    // Pero para hacerlo automático y que él no sufra:
+    
+    window.location.href = rutas[0]; 
 }
 
 init();
