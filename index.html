@@ -42,17 +42,26 @@
         }
 
         async function getTimes(stopId, label) {
-            const container = document.getElementById('container');
-            const backBtn = document.getElementById('backBtn');
-            container.innerHTML = `<p class="loading">Consultando tiempos en ${label}...</p>`;
-            backBtn.style.display = "block";
+    const container = document.getElementById('container');
+    const backBtn = document.getElementById('backBtn');
+    container.innerHTML = `<p class="loading">Consultando tiempos en ${label}...</p>`;
+    backBtn.style.display = "block";
 
-            const res = await fetch(`${API_URL}?stopId=${stopId}`);
-            const data = await res.json();
-            
-            // Mostramos el resultado del widget del CRTM
+    try {
+        const res = await fetch(`${API_URL}?stopId=${stopId}`);
+        const data = await res.json();
+        
+        if (data.error) {
+            container.innerHTML = `<p style="color:red">Error: ${data.error}</p>`;
+        } else if (data.html && data.html.includes("No hay datos")) {
+            container.innerHTML = `<div class="results">No hay buses previstos en este momento para la parada ${stopId}.</div>`;
+        } else {
             container.innerHTML = `<div class="results">${data.html}</div>`;
         }
+    } catch (err) {
+        container.innerHTML = `<p style="color:red">Error de conexión. Revisa si la URL de Google es correcta.</p>`;
+    }
+}
 
         init();
     </script>
