@@ -9,13 +9,9 @@ async function fetchFromCRTM(url) {
     }
   };
 
-  return new Promise((resolve, reject) => {
+ return new Promise((resolve, reject) => {
     https.get(url, options, (res) => {
       let data = '';
-      if (res.statusCode === 404) {
-        reject(new Error('404'));
-        return;
-      }
       res.on('data', (chunk) => data += chunk);
       res.on('end', () => resolve(data));
     }).on('error', (err) => reject(err));
@@ -23,29 +19,37 @@ async function fetchFromCRTM(url) {
 }
 
 export default async function handler(req, res) {
-  const { stopId } = req.query;
+  let { stopId } = req.query;
   
-  // Lista de URLs posibles que el CRTM usa en 2026
-  const urlsToTry = [
-    `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=${stopId}`, // Ruta directa
-    `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${stopId}`, // Ruta con zona interurbana
-    `https://www.crtm.es/widgets/tst/tst.php?s=${stopId}` // Ruta antigua (por si acaso)
+  // 1. LIMPIEZA DE DATOS: Asegurar que el ID tiene 5 cifras (el famoso cero de Torrelodones)
+  if (stopId && stopId.length === 4) {
+    stopId = "0" + stopId;
+  }
+
+  // 2. ESTRATEGIA DE RUTAS: Probamos la oficial de 2026 y la de respaldo
+  const urls = [
+    `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=8_${stopId}`, // Interurbanos (611, 612...)
+    `https://itinerarios.crtm.es/tiempos_paso.php?id_parada=${stopId}`    // Urbanos y otros
   ];
 
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  for (const url of urlsToTry) {
+  for (const url of urls) {
     try {
-      const html = await fetchFromCRTM(url);
-      if (html && html.length > 200) {
-        return res.status(200).json({ html });
+      const result = await callCRTM(url);
+      // Si el servidor nos devuelve una tabla con datos real (más de 300 caracteres)
+      if (result && result.length > 300 && !result.includes("No se han encontrado")) {
+        return res.status(200).json({ html: result });
       }
     } catch (e) {
-      // Si da 404, el bucle sigue con la siguiente URL
-      continue;
+      continue; // Si falla una URL, salta a la siguiente
     }
   }
 
-  res.status(404).json({ error: "No se han encontrado tiempos para esta parada en ninguna de las rutas del Consorcio." });
+  // 3. RESPUESTA SI NADA FUNCIONA
+  res.status(200).json({ 
+    error: `No hay buses previstos ahora en la parada ${stopId}.`,
+    html: "" 
+  });
 }
