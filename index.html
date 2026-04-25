@@ -44,28 +44,24 @@ async function init() {
 }
 
 async function getTimes(stopId, label) {
-    // 1. Limpiamos el ID
-    let idStr = stopId.toString().padStart(5, '0');
+    const idStr = stopId.toString().padStart(5, '0');
+    
+    // Esta URL abre directamente la información de transporte de la parada en Google Maps
+    // Es la forma más fiable de ver los minutos que faltan sin errores 404
+    const urlGoogleMaps = `https://www.google.com/maps/search/?api=1&query=parada+bus+${idStr}+Torrelodones`;
 
-    // 2. Creamos la búsqueda mágica para Google Maps
-    // Esta búsqueda abre directamente la "Ficha de Parada" con los tiempos en tiempo real
-    const urlGoogle = `https://www.google.com/maps/search/?api=1&query=parada+${idStr}+Torrelodones`;
-
-    // 3. Pantalla de carga elegante
     const container = document.getElementById('container');
     container.innerHTML = `
         <div style="padding:40px; text-align:center;">
             <h2 style="color:#f1c40f; font-size:2rem;">Abriendo ${label}</h2>
-            <p style="font-size:1.2rem;">Buscando autobuses en el mapa...</p>
+            <p style="font-size:1.2rem;">Consultando tiempos en Google Maps...</p>
             <div style="margin-top:20px; font-size:4rem;">🚌</div>
         </div>`;
 
-    // 4. Salto a Google Maps
-    // Al ser un Android, esto abrirá directamente la APP de Google Maps 
-    // o la web oficial, que nunca falla.
     setTimeout(() => {
-        window.location.href = urlGoogle;
-    }, 600);
+        // Abrimos en la misma ventana para que tu padre pueda usar el botón "Atrás"
+        window.location.href = urlGoogleMaps;
+    }, 500);
 }
 
 init();
