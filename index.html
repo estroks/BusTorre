@@ -18,52 +18,53 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyPy6M1TTjLS_AaoG5eKZ-UZSIkhg6Hw2BAIjLbAANy-3MNJy-I8geVfCOtnx1sMg4P/exec";
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyPy6M1TTjLS_AaoG5eKZ-UZSIkhg6Hw2BAIjLbAANy-3MNJy-I8geVfCOtnx1sMg4P/exec";
 
-        async function init() {
-            const container = document.getElementById('container');
-            const backBtn = document.getElementById('backBtn');
-            backBtn.style.display = "none";
-            container.innerHTML = '<p class="loading">Cargando...</p>';
-
-            const res = await fetch(API_URL);
-            const buttons = await res.json();
-
-            container.innerHTML = "";
-            buttons.forEach(btn => {
-                const b = document.createElement('button');
-                b.className = "main-button";
-                b.innerText = btn.label;
-                b.style.backgroundColor = btn.color || "#444";
-                b.onclick = () => getTimes(btn.stopId, btn.label);
-                container.appendChild(b);
-            });
-        }
-
-        async function getTimes(stopId, label) {
+async function init() {
     const container = document.getElementById('container');
     const backBtn = document.getElementById('backBtn');
-    container.innerHTML = `<p class="loading">Consultando tiempos en ${label}...</p>`;
-    backBtn.style.display = "block";
+    backBtn.style.display = "none";
+    container.innerHTML = '<p class="loading">Cargando paradas de Torrelodones...</p>';
 
     try {
-        const res = await fetch(`${API_URL}?stopId=${stopId}`);
-        const data = await res.json();
-        
-        if (data.error) {
-            container.innerHTML = `<p style="color:red">Error: ${data.error}</p>`;
-        } else if (data.html && data.html.includes("No hay datos")) {
-            container.innerHTML = `<div class="results">No hay buses previstos en este momento para la parada ${stopId}.</div>`;
-        } else {
-            container.innerHTML = `<div class="results">${data.html}</div>`;
-        }
-    } catch (err) {
-        container.innerHTML = `<p style="color:red">Error de conexión. Revisa si la URL de Google es correcta.</p>`;
+        const res = await fetch(GOOGLE_SHEET_URL);
+        const buttons = await res.json();
+        container.innerHTML = "";
+        buttons.forEach(btn => {
+            const b = document.createElement('button');
+            b.className = "main-button";
+            b.innerText = btn.label;
+            b.style.backgroundColor = btn.color || "#444";
+            b.onclick = () => getTimes(btn.stopId, btn.label);
+            container.appendChild(b);
+        });
+    } catch (e) {
+        container.innerHTML = "<p>Error al cargar el Excel. Revisa los permisos.</p>";
     }
 }
 
-        init();
-    </script>
+async function getTimes(stopId, label) {
+    const container = document.getElementById('container');
+    const backBtn = document.getElementById('backBtn');
+    container.innerHTML = `<p class="loading">Buscando buses en ${label}...</p>`;
+    backBtn.style.display = "block";
+
+    try {
+        // LLAMADA A TU NUEVA API DE VERCEL (más rápida y sin errores SSL)
+        const res = await fetch(`/api/proxy?stopId=${stopId}`);
+        const data = await res.json();
+        
+        if (data.error) {
+            container.innerHTML = `<p>Error: ${data.error}</p>`;
+        } else {
+            // Limpiamos un poco el HTML recibido para que se vea bien
+            container.innerHTML = `<div class="results">${data.html}</div>`;
+        }
+    } catch (err) {
+        container.innerHTML = `<p>Error de conexión con el Consorcio.</p>`;
+    }
+}
+
+init();
 </body>
 </html>
