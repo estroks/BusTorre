@@ -15,6 +15,16 @@
     <script>
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyPy6M1TTjLS_AaoG5eKZ-UZSIkhg6Hw2BAIjLbAANy-3MNJy-I8geVfCOtnx1sMg4P/exec";
 
+        // Este código detecta si el usuario vuelve atrás y refresca la página
+        window.addEventListener('pageshow', function (event) {
+            var historyTraversal = event.persisted || 
+                         (typeof window.performance != 'undefined' && 
+                          window.performance.navigation.type === 2);
+            if (historyTraversal) {
+        // Si venimos de "Atrás", forzamos la recarga para ver los botones
+        window.location.reload();
+    }
+});
         async function init() {
             const container = document.getElementById('container');
             try {
