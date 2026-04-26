@@ -13,46 +13,70 @@
     </div>
 
     <script>
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbyPy6M1TTjLS_AaoG5eKZ-UZSIkhg6Hw2BAIjLbAANy-3MNJy-I8geVfCOtnx1sMg4P/exec";
+const GOOGLE_SHEET_URL = "TU_URL_DE_APPS_SCRIPT_AQUI";
+let ALL_DATA = {}; // Guardaremos los datos aquí
 
-// 1. ESTO VA FUERA: El "vigilante" que refresca si vuelves con el botón atrás
+// El "vigilante" para cuando vuelve atrás
 window.addEventListener('pageshow', function (event) {
-    var historyTraversal = event.persisted || 
-                         (typeof window.performance != 'undefined' && 
-                          window.performance.navigation.type === 2);
-    if (historyTraversal) {
+    if (event.persisted || (typeof window.performance != 'undefined' && window.performance.navigation.type === 2)) {
         window.location.reload();
     }
 });
 
-// 2. TU FUNCIÓN INIT (Modificada para que no borre todo al pulsar)
 async function init() {
     const container = document.getElementById('container');
+    container.innerHTML = "<p style='text-align:center; color:white;'>Cargando menú...</p>";
+    
     try {
         const res = await fetch(GOOGLE_SHEET_URL);
-        const buttons = await res.json();
-        container.innerHTML = "";
-
-        buttons.forEach(btn => {
-            const b = document.createElement('button');
-            b.className = "main-button";
-            b.innerText = btn.label;
-            b.style.backgroundColor = btn.color || "#444";
-
-            // NUEVA LÓGICA DE CLICK:
-            b.onclick = () => {
-                // Solo cambiamos el texto del botón que pulsó
-                b.innerText = "Abriendo...";
-                b.style.opacity = "0.7";
-                
-                // Vamos a Google Maps
-                window.location.href = btn.url;
-            };
-            container.appendChild(b);
-        });
+        ALL_DATA = await res.json();
+        showCategories(); // Al inicio, mostramos las secciones (Salir, Volver, etc)
     } catch (e) {
-        container.innerHTML = "<p style='color:red; text-align:center;'>Error al cargar. Revisa los permisos.</p>";
+        container.innerHTML = "<p style='color:red;'>Error de conexión.</p>";
     }
+}
+
+// PANTALLA 1: Mostrar categorías principales
+function showCategories() {
+    const container = document.getElementById('container');
+    container.innerHTML = ""; // Limpiamos
+    
+    Object.keys(ALL_DATA).forEach(catName => {
+        const b = document.createElement('button');
+        b.className = "main-button"; // Usa tu CSS de botones grandes
+        b.innerText = catName;
+        b.style.backgroundColor = "#444"; // Color neutro para categorías
+        b.onclick = () => showSection(catName);
+        container.appendChild(b);
+    });
+}
+
+// PANTALLA 2: Mostrar paradas de una categoría
+function showSection(catName) {
+    const container = document.getElementById('container');
+    container.innerHTML = `<h2 style="color:#f1c40f; text-align:center;">${catName}</h2>`;
+    
+    // Botón para volver al menú principal
+    const backMenu = document.createElement('button');
+    backMenu.innerText = "⬅ VOLVER AL MENÚ";
+    backMenu.style.width = "100%";
+    backMenu.style.padding = "15px";
+    backMenu.style.marginBottom = "20px";
+    backMenu.onclick = showCategories;
+    container.appendChild(backMenu);
+
+    // Botones de las paradas
+    ALL_DATA[catName].forEach(btn => {
+        const b = document.createElement('button');
+        b.className = "main-button";
+        b.innerText = btn.label;
+        b.style.backgroundColor = btn.color || "#2980b9";
+        b.onclick = () => {
+            b.innerText = "Abriendo mapa...";
+            window.location.href = btn.url;
+        };
+        container.appendChild(b);
+    });
 }
 
 init();
